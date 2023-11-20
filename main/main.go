@@ -124,7 +124,7 @@ func guess(word string) {
 		}
 
 		var guess string
-		fmt.Print("\nGuess (letter): ")
+		fmt.Print("\nGuess (letter or word): ")
 		fmt.Scanln(&guess)
 
 		if len(guess) == 1 {
@@ -147,7 +147,13 @@ func guess(word string) {
 				fmt.Println("You already guessed that letter. Try a different one.")
 			}
 		} else if len(guess) >= 2 {
-			fmt.Println("You can only guess a letter at a time")
+			if guess == word {
+				fmt.Println("Congratulations! You guessed the word:", word)
+				os.Exit(0)
+			} else {
+				essaiRestant -= 2
+				pose_hangman(10 - essaiRestant)
+			}
 		}
 
 		if strings.Join(word_array, "") == word {
