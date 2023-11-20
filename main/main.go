@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -51,6 +52,32 @@ func pose_hangman(nb int) {
 		fmt.Println(lines[i])
 	}
 }
+func revealLetters(word string) []int {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	numToReveal := len(word)/2 - 1
+	if numToReveal < 1 {
+		numToReveal = 1
+	}
+	revealedIndexes := make([]int, numToReveal)
+	for i := 0; i < numToReveal; i++ {
+		index := r.Intn(len(word))
+		if !contains(revealedIndexes, index) {
+			revealedIndexes[i] = index
+		} else {
+			i--
+		}
+	}
+	return revealedIndexes
+}
+
+func contains(arr []int, val int) bool {
+	for _, v := range arr {
+		if v == val {
+			return true
+		}
+	}
+	return false
+}
 
 func motAuHasardDansFichier(nomFichier string) (string, error) {
 	fichier, err := os.Open(nomFichier)
@@ -73,73 +100,64 @@ func motAuHasardDansFichier(nomFichier string) (string, error) {
 	return motAuHasard, nil
 }
 
-
 func guess(word string) {
-    tab_hangman()
-    a := len(word)
-    var word_array []string
-    for i := 0; i < a; i++ {
-        word_array = append(word_array, "_")
-    }
-	b:=os.Args
-    if len(os.Args) != 4 && b[2]!="--letterFile"{
-    	fmt.Println("Usage: ./hangman <words_file> --letterFile <ascii_file>")
-    	os.Exit(1)
-    }
-    fmt.Println("Good luck, you have 10 attempts to find the word !!!")
-    essaiRestant := 10
-    var lettersGuessed []string
-    correctGuess := false
-	Print_Ascii(word_array)
-    for essaiRestant > 0 {
-        var guess string
-        fmt.Print("\nGuess : ")
-        fmt.Scanln(&guess)
+	tab_hangman()
 
-        if len(guess) == 1 {
-            letterGuessed := false
-            if !in(lettersGuessed, guess) {
-                lettersGuessed = append(lettersGuessed, guess)
+	revealedIndexes := revealLetters(word)
+	a := len(word)
+	var word_array []string
+	for i := 0; i < a; i++ {
+		if contains(revealedIndexes, i) {
+			word_array = append(word_array, string(word[i]))
+		} else {
+			word_array = append(word_array, "_")
+		}
+	}
 
-                for index, char := range word {
-                    if string(char) == guess {
-                        word_array[index] = guess
-                        letterGuessed = true
-                    }
-                }
+	fmt.Println("Good luck, you have 10 attempts to find the word !!!")
+	essaiRestant := 10
+	var lettersGuessed []string
+	for essaiRestant > 0 {
+		for i := 0; i < len(word_array); i++ {
+			fmt.Print(word_array[i])
+			fmt.Print(" ")
+		}
 
-                if !letterGuessed {
-                    essaiRestant--
-                    pose_hangman(10 - essaiRestant)
-                } else {
-					Print_Ascii(word_array)
-                }
-            } else {
-                fmt.Println("You already guessed that letter. Try a different one.")
-            }
-        } else if len(guess) >= 2 {
-            if guess == word {
-                for index := range word {
-                    word_array[index] = guess
-                }
-                correctGuess = true
-				} else {
-                essaiRestant -= 2
-                pose_hangman(10 - essaiRestant)
-            }
-        }
+		var guess string
+		fmt.Print("\nGuess (letter or word): ")
+		fmt.Scanln(&guess)
 
-        if strings.Join(word_array, "") == word || correctGuess {
-            Print_Ascii([]string{word})
-            fmt.Println("Congratulations! You guessed the word:", word)
-            os.Exit(0)
-        }
-    }
+		if len(guess) == 1 {
+			letterGuessed := false
+			if !in(lettersGuessed, guess) {
+				lettersGuessed = append(lettersGuessed, guess)
 
-    fmt.Println("You've exhausted all your attempts. The word was:", word)
+				for index, char := range word {
+					if string(char) == guess {
+						word_array[index] = guess
+						letterGuessed = true
+					}
+				}
+
+				if !letterGuessed {
+					essaiRestant--
+					pose_hangman(10 - essaiRestant)
+				}
+			} else {
+				fmt.Println("You already guessed that letter. Try a different one.")
+			}
+		} else if len(guess) >= 2 {
+			fmt.Println("You can only guess a letter at a time")
+		}
+
+		if strings.Join(word_array, "") == word {
+			fmt.Println("Congratulations! You guessed the word:", word)
+			os.Exit(0)
+		}
+	}
+
+	fmt.Println("You've exhausted all your attempts. The word was:", word)
 }
-
-
 
 func in(slice []string, val string) bool {
 	for _, item := range slice {
@@ -149,48 +167,3 @@ func in(slice []string, val string) bool {
 	}
 	return false
 }
-
-var lines2 []string
-
-func tab_ascii() {
-	b:=os.Args[3]
-	originalFile, err := os.Open(b)
-	if err != nil {
-		fmt.Println("Erreur lors de l'ouverture du fichier d'origine :", err)
-		return
-	}
-	defer originalFile.Close()
-
-	scanner := bufio.NewScanner(originalFile)
-	for scanner.Scan() {
-		line := scanner.Text()
-		lines2 = append(lines2, line)
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Erreur lors de la lecture du fichier d'origine :", err)
-		return
-	}
-
-}
-func pose_ascii(nb rune) {
-	const groupSize = 9
-	start := (nb - 1) * groupSize
-	end := nb * groupSize
-	for i := start; i < end; i++ {
-		fmt.Println(lines2[i])
-	}
-}
-
-func Print_Ascii(array []string) {
-    tab_ascii()
-
-    var result strings.Builder
-    for _, str := range array {
-        result.WriteString(str)
-    }
-
-    for _, r := range result.String() {
-        pose_ascii(rune(r) - 31)
-    }
-}
-
