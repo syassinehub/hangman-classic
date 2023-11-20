@@ -16,7 +16,6 @@ func main() {
 		fmt.Printf("Erreur : %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Println(motChoisi)
 	guess(motChoisi)
 }
 
@@ -148,13 +147,7 @@ func guess(word string) {
 				fmt.Println("You already guessed that letter. Try a different one.")
 			}
 		} else if len(guess) >= 2 {
-			if guess == word {
-				fmt.Println("Congratulations! You guessed the word:", word)
-				os.Exit(0)
-			} else {
-				essaiRestant -= 2
-				pose_hangman(10 - essaiRestant)
-			}
+			fmt.Println("You can only guess a letter at a time")
 		}
 
 		if strings.Join(word_array, "") == word {
