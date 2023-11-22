@@ -1,1 +1,0 @@
-{"Word":"courrier","WordArray":["_","_","_","r","_","_","e","r"],"Attempts":10}
