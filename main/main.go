@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Hangman"
+	"github.com/syassinehub/hangman-classic"
 	"os"
 	"fmt"
 )
